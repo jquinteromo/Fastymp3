@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+  const socket = new WebSocket("ws://127.0.0.1:3000/ws");
+  socket.onopen = () => console.log("✅ Firefox conectado");
+  socket.onerror = (e) => console.error("❌ Error Firefox:", e);
+</script>
+</body>
+</html>
