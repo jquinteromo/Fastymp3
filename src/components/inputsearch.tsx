@@ -83,6 +83,13 @@ export default function Inputsearch() {
     //     text.text
     //   )}&id=${sessionId}`
     // )
+    console.log(
+      "URL final:",
+      `https://apifastymp3.onrender.com/api/descargar?url=${encodeURIComponent(
+        text.text
+      )}&id=${sessionId}`
+    );
+
     fetch(
       `https://apifastymp3.onrender.com/api/descargar?url=${encodeURIComponent(
         text.text
