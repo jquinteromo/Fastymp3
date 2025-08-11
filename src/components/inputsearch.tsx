@@ -11,9 +11,7 @@ export default function Inputsearch() {
   const [queuedMessage, setQueuedMessage] = useState(false);
 
   useEffect(() => {
-    // const socket = new WebSocket(`ws://${window.location.hostname}:3000/ws`);
     const socket = new WebSocket(`wss://apifastymp3.onrender.com/ws`);
-
     socketRef.current = socket;
 
     socket.addEventListener("open", () => {
@@ -23,13 +21,7 @@ export default function Inputsearch() {
     socket.addEventListener("message", (event) => {
       const data = JSON.parse(event.data);
 
-      if (data.type === "preparing_audio") {
-        setShowBanner(true);
-        setShowDownloading(false);
-        setQueuedMessage(false);
-      }
-
-      if (data.type === "conversion_started") {
+      if (data.type === "preparing_audio" || data.type === "conversion_started") {
         setShowBanner(true);
         setShowDownloading(false);
         setQueuedMessage(false);
@@ -40,13 +32,11 @@ export default function Inputsearch() {
         setShowDownloading(true);
         setQueuedMessage(false);
 
+        const encodedUrl = encodeURIComponent(text.text);
+        const finalUrl = `https://apifastymp3.onrender.com/api/descargar?url=${encodedUrl}&id=${sessionId}`;
+
         const link = document.createElement("a");
-        // link.href = `http://localhost:3000/api/descargar?url=${encodeURIComponent(
-        //   text.text
-        // )}&id=${sessionId}`;
-        link.href = `https://apifastymp3.onrender.com/api/descargar?url=${encodeURIComponent(
-          text.text
-        )}&id=${sessionId}`;
+        link.href = finalUrl;
         link.setAttribute("download", "");
         document.body.appendChild(link);
         link.click();
@@ -62,9 +52,7 @@ export default function Inputsearch() {
       }
 
       if (data.type === "limit_reached") {
-        alert(
-          "❌ Solo puedes descargar 2 canciones a la vez. Espera que una termine."
-        );
+        alert("❌ Solo puedes descargar 2 canciones a la vez. Espera que una termine.");
       }
     });
 
@@ -76,30 +64,23 @@ export default function Inputsearch() {
   }, [sessionId, text.text]);
 
   const handleSubmit = () => {
-    if (!text.text) return;
+    if (!text.text || !text.text.startsWith("http")) {
+      alert("❌ Pega una URL válida de YouTube.");
+      return;
+    }
 
-    // fetch(
-    //   `http://localhost:3000/api/descargar?url=${encodeURIComponent(
-    //     text.text
-    //   )}&id=${sessionId}`
-    // )
-    console.log(
-      "URL final:",
-      `https://apifastymp3.onrender.com/api/descargar?url=${encodeURIComponent(
-        text.text
-      )}&id=${sessionId}`
-    );
+    const encodedUrl = encodeURIComponent(text.text);
+    const finalUrl = `https://apifastymp3.onrender.com/api/descargar?url=${encodedUrl}&id=${sessionId}`;
 
-    fetch(
-      `https://apifastymp3.onrender.com/api/descargar?url=${encodeURIComponent(
-        text.text
-      )}&id=${sessionId}`
-    )
+    console.log("URL final:", finalUrl);
+
+    fetch(finalUrl)
       .then(() => {
         console.log("🎬 Conversión iniciada");
       })
       .catch((err) => {
         console.error("❌ Error al iniciar conversión:", err);
+        alert("❌ No se pudo iniciar la conversión. Intenta de nuevo.");
       });
   };
 
@@ -113,10 +94,7 @@ export default function Inputsearch() {
           placeholder="🎥 Pega la URL del video de YouTube..."
           className="outline-none pl-20 py-2 h-20 rounded-xl w-full bg-white/10 border border-white/25 mb-6 text-white"
         />
-        <Search
-          size={34}
-          className="z-40 text-gray-400 absolute left-6 top-6"
-        />
+        <Search size={34} className="z-40 text-gray-400 absolute left-6 top-6" />
         <button
           onClick={handleSubmit}
           className="absolute p-4 bg-black text-white right-4 rounded-md hover:bg-blue-700 transition"
